@@ -2,25 +2,24 @@ import {
   Column,
   CreateDateColumn,
   Entity,
-  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm'
-import Tool from './Tool'
+import ToolTag from './ToolTag'
 
 @Entity('tags')
 class Tag {
   @PrimaryGeneratedColumn('increment')
   id: number
 
-  @Column({ name: 'tool_id' })
-  toolId: number
-
-  @ManyToOne(() => Tool, tool => tool.tags)
-  tool: Tool
-
   @Column()
   name: string
+
+  @OneToMany(() => ToolTag, toolTag => toolTag.tool, {
+    cascade: true,
+  })
+  tool_tags: ToolTag[]
 
   @CreateDateColumn({ name: 'created_at' })
   createdAt: Date

@@ -14,10 +14,6 @@ export class CreateTags1605223190949 implements MigrationInterface {
             generationStrategy: 'increment',
           },
           {
-            name: 'tool_id',
-            type: 'integer',
-          },
-          {
             name: 'name',
             type: 'varchar',
             isNullable: false,
@@ -31,16 +27,6 @@ export class CreateTags1605223190949 implements MigrationInterface {
             name: 'updated_at',
             type: 'timestamp',
             default: 'now()',
-          },
-        ],
-        foreignKeys: [
-          {
-            name: 'ToolTag',
-            referencedTableName: 'tools',
-            referencedColumnNames: ['id'],
-            columnNames: ['tool_id'],
-            onUpdate: 'CASCADE',
-            onDelete: 'SET NULL',
           },
         ],
       }),

@@ -1,6 +1,11 @@
 import ICreateToolDTO from '@modules/tools/dtos/ICreateToolDTO'
 import AppError from '@shared/errors/AppError'
-import { DeepPartial, getRepository, Repository } from 'typeorm'
+import {
+  DeepPartial,
+  getRepository,
+  Repository,
+  SelectQueryBuilder,
+} from 'typeorm'
 import IToolsRepository from '../../../repositories/IToolsRepository'
 import Tag from '../entities/Tag'
 import Tool from '../entities/Tool'
@@ -23,34 +28,39 @@ class ToolsRepository implements IToolsRepository {
     return tool
   }
 
-  public async getAll(tag?: string): Promise<Tool[]> {
-    let tools: Tool[]
+  public async getAll(tag?: string, tagsOnly?: boolean): Promise<Tool[]> {
+    let selectCondition: SelectQueryBuilder<Tool> = this.ormRepository
+      .createQueryBuilder('tool')
+      .select([
+        'tool.id',
+        'tool.name',
+        'tool.link',
+        'tool.description',
+        'tag.name',
+      ])
+      .leftJoin('tool.tags', 'tag')
 
     if (tag?.length) {
-      tools = await this.ormRepository
-        .createQueryBuilder('tool')
-        .select([
-          'tool.id',
-          'tool.name',
-          'tool.link',
-          'tool.description',
-          'tag',
-        ])
-        .innerJoin('tool.tags', 'tag', 'tag.name = :tag', { tag })
+      const result = await this.toolTagsRepository
+        .createQueryBuilder('tool_tag')
+        .select('tool_tag.tool_id')
+        .innerJoin('tool_tag.tag', 'tag', 'tag.name = :tag', { tag })
         .getMany()
-    } else {
-      tools = await this.ormRepository
-        .createQueryBuilder('tool')
-        .select([
-          'tool.id',
-          'tool.name',
-          'tool.link',
-          'tool.description',
-          'tag.name',
-        ])
-        .leftJoin('tool.tags', 'tag')
-        .getMany()
+
+      const toolIds = result.map(toolTag => toolTag.tool_id)
+
+      selectCondition = selectCondition.whereInIds(toolIds)
+
+      if (!tagsOnly) {
+        selectCondition = selectCondition.orWhere('tool.name LIKE :tag', {
+          tag: `%${tag}%`,
+        })
+      }
     }
+
+    const tools = await selectCondition
+      .orderBy('tool.created_at', 'DESC')
+      .getMany()
 
     return tools
   }

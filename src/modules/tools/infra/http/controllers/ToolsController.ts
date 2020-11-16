@@ -7,11 +7,11 @@ import { container } from 'tsyringe'
 
 export default class ToolsController {
   public async show(request: Request, response: Response): Promise<Response> {
-    const { tag } = request.query
+    const { tag, tagsOnly } = request.query
 
     const getTools = container.resolve(GetToolsService)
 
-    const tools = await getTools.execute(tag?.toString())
+    const tools = await getTools.execute(tag?.toString(), tagsOnly === 'true')
 
     return response.json(classToClass(tools))
   }

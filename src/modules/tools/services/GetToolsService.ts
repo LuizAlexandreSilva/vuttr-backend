@@ -9,8 +9,8 @@ class GetToolsService {
     private toolsRepository: IToolsRepository,
   ) {}
 
-  public async execute(tag?: string): Promise<Tool[]> {
-    const tools = await this.toolsRepository.getAll(tag)
+  public async execute(tag?: string, tagsOnly?: boolean): Promise<Tool[]> {
+    const tools = await this.toolsRepository.getAll(tag, tagsOnly)
 
     return tools
   }
